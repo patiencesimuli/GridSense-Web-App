@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>3-Phase Power Line Monitoring</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+</head>
+<body>
+    <h1>3-Phase Power Line Monitoring</h1>
+
+    <h2>Voltage Data</h2>
+    <canvas id="voltageChart"></canvas>
+
+    <h2>Current Data</h2>
+    <canvas id="currentChart"></canvas>
+
+    <h2>Anomaly Score</h2>
+    <p id="anomalyScore"></p>
+
+    <h2>Fault Type</h2>
+    <p id="faultType"></p>
+
+    <script>
+        // Initialize voltage and current charts
+        const voltageChart = new Chart(document.getElementById('voltageChart'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Voltage (V)',
+                    data: []
+                }]
+            },
+            options: {
+                responsive: true,
+                title: {
+                    display: true,
+                    text: 'Voltage Data'
+                }
+            }
+        });
+
+        const currentChart = new Chart(document.getElementById('currentChart'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Current (A)',
+                    data: []
+                }]
+            },
+            options: {
+                responsive: true,
+                title: {
+                    display: true,
+                    text: 'Current Data'
+                }
+            }
+        });
+
+        // Fetch and update sensor data and anomaly/fault information periodically
+        setInterval(() => {
+            fetch('/').then(response => response.json()).then(data => {
+                const voltageData = data.voltage_data;
+                const currentData = data.current_data;
+                const anomalyScore = data.anomaly_score;
+                const faultType = data.fault_type;
+
+                // Update voltage chart
+                voltageChart.data.labels = voltageData.timestamps;
+                voltageChart.data.datasets[0].data = voltageData.values;
+                voltageChart.update();
+
+                // Update current chart
+                currentChart.data.labels = currentData.timestamps;
+                currentChart.data.datasets[0].data = currentData.values;
+                currentChart.update();
+
+                // Update anomaly score
+                document.getElementById('anomalyScore').textContent = `Anomaly Score: ${anomalyScore}`;
+
+                // Update fault type
+                document.getElementById('faultType').textContent = `Fault Type: ${faultType}`;
+            });
+        }, 1000); // Update every second
+    </script>
+</body>
+</html>
